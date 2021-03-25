@@ -1,7 +1,5 @@
 const pool = require('../lib/utils/pool');
 const setup = require('../data/setup');
-const request = require('supertest');
-const app = require('../lib/app');
 const Order = require('../lib/models/Order');
 
 jest.mock('twilio', () => () => ({
@@ -18,11 +16,9 @@ describe('03_separation-of-concerns-demo routes', () => {
 
   it('creates a new order in our database and sends a text message', async () => {
 
-    const res = await request(app)
-      .post('/api/v1/orders')
-      .send({ quantity: 10 });
+   const order = await Order.insert({ quantity: 10 });
 
-    expect(res.body).toEqual({
+    expect(order).toEqual({
       id: '1',
       quantity: 10,
     });
@@ -33,42 +29,38 @@ describe('03_separation-of-concerns-demo routes', () => {
       const orders = await Order
         .insert({ quantity: 1 });
       
-      const res = await request(app)
-        .get('/api/v1/orders');
+       const result = await Order.getAll()
       
-      expect(res.body).toEqual([orders]);
+      expect(result).toEqual([orders]);
     });
   
   it('gets an order by id from our database', async () => {
 
-    const order = await Order
-      .insert({ quantity: 10 });
+    const order = await Order.insert({ quantity: 10 });
     
-    const res = await request(app)
-      .get(`/api/v1/orders/${order.id}`);
+   const result = await Order.getOrderById(1)
     
-      expect(res.body).toEqual(order);
+      expect(result).toEqual(order);
   });
   
   it('updates an order selected by id in our database', async () => {
    
-    const order = await Order
-      .insert({ quantity: 10 });
+    Order.insert({ quantity: 10 });
     
-    const updatedOrder = await Order
-      .updateOrderById(20, order.id);
+    const updatedOrder = await Order.updateOrderById(20, 1);
     
-    const res = await request(app)
-      .get(`/api/v1/orders/${order.id}`);
-    
-      expect(res.body).toEqual(updatedOrder);
+    const result = await Order.getOrderById(1)
+
+      expect(result).toEqual(updatedOrder);
   });
   
   it('deletes an order selected by id in our database', async () => {
    
-   const result =  await Order.insert({ quantity: 10 });
+    const result = await Order.insert({ quantity: 10 });
+
     await Order.insert({ quantity: 24 });
     await Order.deleteOrderById(2);
+    
     const orderDB = await Order.getAll();
 
       expect(orderDB).toEqual([result]);
