@@ -14,7 +14,35 @@ module.exports = Router()
       next(err);
     }
   })
-  .get('/', async (req, res, next) => {})
-  .get('/:id', async (req, res, next) => {})
-  .put('/:id', async (req, res, next) => {})
-  .delete('/:id', async (req, res, next) => {});
+
+  .get('/', (req, res, next) => {
+    OrderService
+      .getOrders()
+      .then(orders => res.send(orders))
+      .catch(next);
+  })
+
+  .get('/:id', (req, res, next) => {
+    const id = req.params.id
+    OrderService
+      .getOrderById(id)
+      .then(order => res.send(order))
+      .catch(next);
+  })
+
+  .put('/:id', async (req, res, next) => {
+    const id = req.params.id
+    const quantity = req.body.quantity
+    OrderService
+      .updateOrderById(quantity, id)
+      .then(order => res.send(order))
+      .catch(next);
+  })
+
+  .delete('/:id', async (req, res, next) => {
+    const id = req.params.id;
+    OrderService
+      .deleteOrderById(id)
+      .then(order => res.send(order))
+      .catch(next);
+  });

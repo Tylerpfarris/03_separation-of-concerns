@@ -21,4 +21,52 @@ module.exports = class Order {
 
     return new Order(rows[0]);
   }
+
+  static async getAll() {
+    const {
+      rows,
+    } = await pool.query(
+      'SELECT * FROM orders' 
+    );
+
+    return rows.map(row => {
+      return new Order(row);
+    })
+  }
+
+  static async getOrderById(id){
+    const {
+  rows,
+} = await pool.query(
+  'SELECT * FROM orders WHERE id = $1', [id]
+      );
+    return new Order(rows[0])
+  
+  }
+  
+  static async updateOrderById(quantity, id) {
+    const {
+  rows,
+    } = await pool.query(`
+        UPDATE orders
+        SET quantity = $1
+        WHERE id = $2
+        RETURNING *`, [quantity, id]
+      );
+    return new Order(rows[0])
+  
+  }
+  
+  static async deleteOrderById(id) {
+    const {
+  rows,
+    } = await pool.query(`
+        DELETE
+        FROM orders
+        WHERE id = $1
+        RETURNING *`, [id]
+      );
+    return new Order(rows[0])
+  
+  }
 };
